@@ -15,7 +15,7 @@ type TCPServer struct {
 }
 
 func (s *TCPServer) Start() {
-	fmt.Println("[Start] Server Listenner at IP:%s,Port %d is starting", s.Addr, s.Port)
+	fmt.Printf("[Start] Server Listenner at IP:%s,Port %d is starting\n", s.Addr, s.Port)
 	tcpAddr, err := net.ResolveTCPAddr(s.Network, s.Addr)
 	if err != nil {
 		fmt.Println("resolve tcp addr error ", err)
@@ -43,7 +43,7 @@ func (s *TCPServer) Start() {
 }
 
 func EchoClient(conn *net.TCPConn,data []byte,cnt int)error{
-	fmt.Printf("[Conn Hanlde] CallBackToClient")
+	fmt.Printf("[Conn Hanlde] CallBackToClient\n")
 	if _,err := conn.Write(data[:cnt]);err != nil{
 		return errors.New("Echo error ")
 	}
@@ -63,6 +63,7 @@ func NewServer(name string) iface.IServer {
 	s := new(TCPServer)
 	s.Name = name
 	s.Network = "tcp4"
+	s.Addr = "0.0.0.0:8999"
 	s.Port = 8999
 	return s
 }

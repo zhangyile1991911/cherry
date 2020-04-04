@@ -36,7 +36,7 @@ func (c *Connection)StartReader(){
 		cnt,err := c.Conn.Read(buf)
 		if err != nil{
 			fmt.Printf("recv buf err %v",err)
-			continue
+			break
 		}
 
 		if c.handleAPI != nil {
@@ -63,7 +63,7 @@ func (c *Connection) Stop() {
 		return
 	}
 
-	c.Conn.Close()
+	_ = c.Conn.Close()
 	close(c.ExitChan)
 
 	c.isClose = true
