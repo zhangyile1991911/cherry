@@ -1,17 +1,17 @@
 package net
 
 import (
-	"errors"
 	"fmt"
 	"github.com/zhangyile1991911/cherry/iface"
 	"net"
 )
 
 type TCPServer struct {
-	Name string
-	Network   string
-	Addr string
-	Port int
+	Name    string
+	Network string
+	Addr    string
+	Port    int
+	Router	iface.IRouter
 }
 
 func (s *TCPServer) Start() {
@@ -36,28 +36,31 @@ func (s *TCPServer) Start() {
 		if err != nil {
 			fmt.Printf("Accept err", err)
 		}
-		dealConn := NewConnection(conn,cid,EchoClient)
+		dealConn := NewConnection(conn, cid, s.Router)
 		dealConn.Start()
 		cid++
 	}
 }
 
-func EchoClient(conn *net.TCPConn,data []byte,cnt int)error{
-	fmt.Printf("[Conn Hanlde] CallBackToClient\n")
-	if _,err := conn.Write(data[:cnt]);err != nil{
-		return errors.New("Echo error ")
-	}
-	return nil
-}
+//func EchoClient(conn *net.TCPConn, data []byte, cnt int) error {
+//	fmt.Printf("[Conn Hanlde] CallBackToClient\n")
+//	if _, err := conn.Write(data[:cnt]); err != nil {
+//		return errors.New("Echo error ")
+//	}
+//	return nil
+//}
 
 func (s *TCPServer) Stop() {
 
 }
 
-func (s *TCPServer)Run(){
+func (s *TCPServer) Run() {
 	s.Start()
 }
 
+func (s *TCPServer)AddRouter(router iface.IRouter){
+	s.Router = router
+}
 
 func NewServer(name string) iface.IServer {
 	s := new(TCPServer)

@@ -6,4 +6,6 @@ type IServer interface {
 	Stop()
 
 	Run()
+
+	AddRouter(router IRouter)
 }
