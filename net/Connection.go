@@ -3,6 +3,7 @@ package net
 import (
 	"fmt"
 	"github.com/zhangyile1991911/cherry/iface"
+	"github.com/zhangyile1991911/cherry/utilis"
 	"net"
 )
 
@@ -31,7 +32,7 @@ func (c *IConnection) StartReceive() {
 	defer fmt.Printf("connID = %d Reader is exit remote addr is %s", c.ConnID, c.GetRemoteAddr().String())
 	defer c.Stop()
 
-	buf := make([]byte, 512)
+	buf := make([]byte, utilis.GlobalObj.MaxPackageSize)
 	for {
 
 		_, err := c.Conn.Read(buf)
