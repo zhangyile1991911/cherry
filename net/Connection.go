@@ -1,13 +1,14 @@
 package net
 
 import (
+	"errors"
 	"fmt"
 	"github.com/zhangyile1991911/cherry/iface"
-	"github.com/zhangyile1991911/cherry/utilis"
+	"io"
 	"net"
 )
 
-type IConnection struct {
+type Connection struct {
 	Conn      *net.TCPConn
 	ConnID    uint32
 	isClose   bool
@@ -16,8 +17,8 @@ type IConnection struct {
 	Router    iface.IRouter
 }
 
-func NewConnection(conn *net.TCPConn, connID uint32, router iface.IRouter) *IConnection {
-	c := new(IConnection)
+func NewConnection(conn *net.TCPConn, connID uint32, router iface.IRouter) *Connection {
+	c := new(Connection)
 	c.Conn = conn
 	c.ConnID = connID
 	c.Router = router
@@ -27,39 +28,84 @@ func NewConnection(conn *net.TCPConn, connID uint32, router iface.IRouter) *ICon
 	return c
 }
 
-func (c *IConnection) StartReceive() {
+func (c *Connection) StartReceive() {
 	fmt.Println("Reader Goroutine is running...")
 	defer fmt.Printf("connID = %d Reader is exit remote addr is %s", c.ConnID, c.GetRemoteAddr().String())
 	defer c.Stop()
 
-	buf := make([]byte, utilis.GlobalObj.MaxPackageSize)
 	for {
-
-		_, err := c.Conn.Read(buf)
-		if err != nil {
-			fmt.Printf("recv buf err %v", err)
+		headData := make([]byte,GetHeadLen())
+		if _,err := io.ReadFull(c.Conn,headData);err != nil{
+			fmt.Println("read msg head error",err)
 			break
 		}
 
-		req := Request{conn:c,data:buf}
+		msg,err := Unpack(headData)
+		if err != nil{
+			fmt.Println("")
+			break
+		}
 
-		c.Router.PreHandle(&req)
+		if msg.GetMsgLen() <= 0 {
+			fmt.Println("")
+			break
+		}
 
-		c.Router.Handle(&req)
+		bodyData := make([]byte,msg.GetMsgLen())
+		if _,err := io.ReadFull(c.Conn,bodyData);err != nil{
+			fmt.Println("")
+			break
+		}
 
-		c.Router.PostHandle(&req)
+		msg.SetData(bodyData)
+
+		req := &Request{
+			conn:c,
+			msg:msg}
+
+		c.Router.PreHandle(req)
+
+		c.Router.Handle(req)
+
+		c.Router.PostHandle(req)
 	}
 
 }
 
-func (c *IConnection) Start() {
+
+func (c *Connection)SendMsg(msgId uint32,data []byte)error{
+	if c.isClose{
+		return errors.New("")
+	}
+
+	msg := &Message{}
+	msg.Id = msgId
+	msg.DataLen = uint32(len(data))
+	msg.Data = data
+
+
+	byteDatas,err := Pack(msg)
+	if err != nil{
+		fmt.Println("")
+		return err
+	}
+
+	if _,err := c.Conn.Write(byteDatas);err != nil{
+		fmt.Println("")
+		return err
+	}
+
+	return nil
+}
+
+func (c *Connection) Start() {
 	fmt.Println("Conn Start().. ConnID = ", c.ConnID)
 
 	go c.StartReceive()
 
 }
 
-func (c *IConnection) Stop() {
+func (c *Connection) Stop() {
 	fmt.Println("Conn Stop().. ConnID = ", c.ConnID)
 	if c.isClose {
 		return
@@ -71,18 +117,15 @@ func (c *IConnection) Stop() {
 	c.isClose = true
 }
 
-func (c *IConnection) GetTCPConnection() *net.TCPConn {
+func (c *Connection) GetTCPConnection() *net.TCPConn {
 	return c.Conn
 }
 
-func (c *IConnection) GetConnID() uint32 {
+func (c *Connection) GetConnID() uint32 {
 	return c.ConnID
 }
 
-func (c *IConnection) GetRemoteAddr() net.Addr {
+func (c *Connection) GetRemoteAddr() net.Addr {
 	return c.Conn.RemoteAddr()
 }
 
-func (c *IConnection) Send(data []byte) error {
-	return nil
-}

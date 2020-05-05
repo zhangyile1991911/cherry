@@ -67,6 +67,6 @@ func NewServer(name string) iface.IServer {
 	s := new(TCPServer)
 	s.Name = name
 	s.Network = "tcp4"
-	s.Addr = fmt.Sprintf("%s%d",utilis.GlobalObj.Host,utilis.GlobalObj.Port)
+	s.Addr = fmt.Sprintf("%s:%d",utilis.GlobalObj.Host,utilis.GlobalObj.Port)
 	return s
 }

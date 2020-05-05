@@ -2,7 +2,7 @@ package net
 
 type Message struct{
 	Id uint32
-	DateLen uint32
+	DataLen uint32
 	Data []byte
 }
 
@@ -11,10 +11,10 @@ func(m *Message)GetMsgId() uint32{
 }
 
 func(m *Message)GetMsgLen() uint32{
-	return m.DateLen
+	return m.DataLen
 }
 
-func(m *Message)GateData() []byte{
+func(m *Message)GetData() []byte{
 	return m.Data
 }
 
@@ -27,5 +27,5 @@ func(m *Message)SetData(data []byte){
 }
 
 func(m *Message)SetMsgLen(len uint32){
-	m.DateLen = len
+	m.DataLen = len
 }

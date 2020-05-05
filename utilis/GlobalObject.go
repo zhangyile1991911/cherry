@@ -8,13 +8,13 @@ import (
 
 type GlobalObject struct{
 	TCPServer iface.IServer
-	Host string
-	Port int
-	Name string
+	Host string `json:"host"`
+	Port int `json:"port"`
+	Name string `json:"name"`
 
-	Version string
-	MaxConn int
-	MaxPackageSize uint32
+	Version string `json:"Version"`
+	MaxConn int `json:"max_conn"`
+	MaxPackageSize uint32 `json:"max_package_size"`
 }
 
 var GlobalObj *GlobalObject
