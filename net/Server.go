@@ -1,5 +1,5 @@
 package net
-
+//29
 import (
 	"fmt"
 	"github.com/zhangyile1991911/cherry/iface"
@@ -12,7 +12,7 @@ type TCPServer struct {
 	Network string
 	Addr    string
 	Port    int
-	Router	iface.IRouter
+	Router	iface.IMessageHandler
 }
 
 func (s *TCPServer) Start() {
@@ -59,8 +59,8 @@ func (s *TCPServer) Run() {
 	s.Start()
 }
 
-func (s *TCPServer)AddRouter(router iface.IRouter){
-	s.Router = router
+func (s *TCPServer)AddRouter(msgId uint32,router iface.IRouter){
+	s.Router.AddRouter(msgId,router)
 }
 
 func NewServer(name string) iface.IServer {
@@ -68,5 +68,6 @@ func NewServer(name string) iface.IServer {
 	s.Name = name
 	s.Network = "tcp4"
 	s.Addr = fmt.Sprintf("%s:%d",utilis.GlobalObj.Host,utilis.GlobalObj.Port)
+	s.Router = NewMessageHandler()
 	return s
 }

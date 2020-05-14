@@ -14,14 +14,14 @@ type Connection struct {
 	isClose   bool
 	//handleAPI iface.HandleFunc
 	ExitChan  chan bool
-	Router    iface.IRouter
+	MsgHandler iface.IMessageHandler
 }
 
-func NewConnection(conn *net.TCPConn, connID uint32, router iface.IRouter) *Connection {
+func NewConnection(conn *net.TCPConn, connID uint32, handler iface.IMessageHandler) *Connection {
 	c := new(Connection)
 	c.Conn = conn
 	c.ConnID = connID
-	c.Router = router
+	c.MsgHandler = handler
 	c.isClose = false
 	c.ExitChan = make(chan bool, 1)
 
@@ -63,11 +63,7 @@ func (c *Connection) StartReceive() {
 			conn:c,
 			msg:msg}
 
-		c.Router.PreHandle(req)
-
-		c.Router.Handle(req)
-
-		c.Router.PostHandle(req)
+		c.MsgHandler.DispatchMsgHandler(req)
 	}
 
 }
